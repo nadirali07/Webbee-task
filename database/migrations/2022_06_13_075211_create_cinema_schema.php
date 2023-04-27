@@ -34,9 +34,47 @@ class CreateCinemaSchema extends Migration
      * As a user I want to know where I'm sitting on my ticket
      * As a cinema owner I dont want to configure the seating for every show
      */
+
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        // Create the movies table
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->time('duration');
+            $table->timestamps();
+        });
+
+        // Create the showtimes table
+        Schema::create('showtimes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_id')->constrained();
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->string('room_number');
+            $table->integer('available_seats');
+            $table->timestamps();
+        });
+
+        // Create the prices table
+        Schema::create('prices', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('showtime_id')->constrained();
+            $table->decimal('base_price');
+            $table->decimal('premium_percentage');
+            $table->string('seat_type');
+            $table->timestamps();
+        });
+
+        // Create the seats table
+        Schema::create('seats', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('showtime_id')->constrained();
+            $table->string('seat_number');
+            $table->string('seat_type');
+            $table->string('status');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -46,5 +84,10 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        // Drop the tables in reverse order
+        Schema::dropIfExists('seats');
+        Schema::dropIfExists('prices');
+        Schema::dropIfExists('showtimes');
+        Schema::dropIfExists('movies');
     }
 }
