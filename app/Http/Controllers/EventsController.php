@@ -8,12 +8,15 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
 
 class EventsController extends BaseController
 {
     public function getWarmupEvents() {
         return Event::all();
     }
+
+
 
     /* TODO: complete getEventsWithWorkshops so that it returns all events including the workshops
      Requirements:
@@ -100,8 +103,14 @@ class EventsController extends BaseController
     ]
      */
 
-    public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+    public function getEventsWithWorkshops()
+    {
+        try{
+            $events = Event::with('workshops')->get();
+            return $events;
+        }catch(\Exception $e){
+            throw new \Exception('implement in coding task 1' , $e->getMessage());
+        }
     }
 
 
@@ -178,7 +187,23 @@ class EventsController extends BaseController
     ```
      */
 
-    public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+    public function getFutureEventsWithWorkshops()
+    {
+        try {
+            $events = Event::with('workshops')
+                ->whereIn('id', function ($query) {
+                    $query->select('event_id')
+                        ->from('workshops')
+                        ->whereRaw('start > NOW()')
+                        ->groupBy('event_id')
+                        ->havingRaw('MIN(start)');
+                })
+                ->get();
+
+            return $events;
+
+        }catch(\Exception $e){
+            Log::error('implement in coding task 2' . $e->getMessage());
+        }
     }
 }
